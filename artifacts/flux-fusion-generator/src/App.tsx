@@ -25,6 +25,14 @@ type OptionKey =
 
 type FormState = Record<OptionKey, string>;
 
+type TagGroupKey = 'style' | 'mood' | 'detailTags' | 'quality' | 'technical' | 'negativeTags';
+
+type TagGroup = {
+  key: TagGroupKey;
+  label: string;
+  values: string[];
+};
+
 const styleDetails = [
   'realistic', 'photorealistic', 'digital draw style', 'detailed', 'artistic',
   'Watercolor', 'cyberpunk', 'Aquarell', 'Kreide', 'Cartoon', 'Scetch',
@@ -45,7 +53,11 @@ const aspectRatios = [
 const options: Record<OptionKey, { label: string; values: string[] }> = {
   motif: {
     label: 'Motiv',
-    values: ['Portrait', 'Landschaft', 'Sci-Fi', 'Fantasy', 'Surrealismus', 'Architektur'],
+    values: [
+      'Portrait', 'Landschaft', 'Landscape', 'Architektur', 'Architecture', 'Animal',
+      'Abstract', 'Still Life', 'Fantasy Scene', 'Sci-Fi Scene', 'Sci-Fi', 'Fantasy',
+      'Surrealismus',
+    ],
   },
   artistA: {
     label: 'Künstler A (Basisstil)',
@@ -106,6 +118,81 @@ const options: Record<OptionKey, { label: string; values: string[] }> = {
   },
 };
 
+const tagGroups: TagGroup[] = [
+  {
+    key: 'style',
+    label: 'Style',
+    values: [
+      'photorealistic', 'anime style', 'digital art', 'oil painting', 'concept art',
+      'watercolor', '8k render', 'fantasy art', 'avant-garde editorial',
+      'high fashion editorial', 'cinematic documentary', 'Vogue Italia aesthetic',
+      'Peter Lindbergh style', 'Mario Testino style', 'fine art photography',
+      'street photography', 'romantic portrait', 'glamour photography',
+      'soft cinematic mood', 'tasteful fashion editorial', 'luxury magazine aesthetic',
+    ],
+  },
+  {
+    key: 'mood',
+    label: 'Mood / Stimmung',
+    values: [
+      'romantic atmosphere', 'dreamy mood', 'elegant', 'warm and intimate',
+      'soft and graceful', 'confident expression', 'calm presence',
+      'poetic composition', 'sophisticated tone', 'gentle expression',
+    ],
+  },
+  {
+    key: 'detailTags',
+    label: 'Detail',
+    values: [
+      'natural fabric texture', 'soft skin highlights', 'refined facial features',
+      'subtle jewelry', 'flowing hair', 'clean background', 'gentle contrast',
+      'balanced color palette', 'delicate shadows', 'polished composition',
+    ],
+  },
+  {
+    key: 'quality',
+    label: 'Quality & Resolution',
+    values: [
+      'masterpiece', 'high detail', '8K resolution', 'sharp focus on face',
+      'best quality', 'intricate details', 'professional', 'award winning',
+      'ultra high resolution', 'hyper detailed', 'studio quality',
+      'crisp texture detail', 'soft background bokeh',
+    ],
+  },
+  {
+    key: 'technical',
+    label: 'Technical Parameters',
+    values: [
+      'guidance scale 1.5', 'guidance scale 2.5', 'guidance scale 3.5',
+      '--style raw', '--stylize 0', '--v 6', 'natural skin texture:1.3',
+      'f/1.8 aperture', 'f/2.0 aperture', 'ISO 400', '1/125s shutter speed',
+      'wide open aperture',
+    ],
+  },
+  {
+    key: 'negativeTags',
+    label: 'Negative Tags',
+    values: [
+      'blurry', 'low quality', 'bad anatomy', 'extra limbs', 'deformed', 'ugly',
+      'watermark', 'signature', 'text', 'cropped', 'plastic skin', 'waxy skin',
+      'airbrushed', 'over-smoothed face', 'perfect symmetry', 'doll-like',
+      'uncanny valley', 'artificial lighting', 'glossy skin', 'CGI', '3D render',
+      'cartoon', 'anime', 'illustration', 'painting', 'drawing',
+      'oversaturated colors', 'studio lighting', 'no makeup filter',
+      'deformed hands', 'extra fingers', 'mutated anatomy',
+    ],
+  },
+];
+
+const initialTagSelections: Record<TagGroupKey, string[]> = {
+  style: ['photorealistic'],
+  mood: [],
+  detailTags: [],
+  quality: [],
+  technical: [],
+  negativeTags: [],
+};
+
 const initialState: FormState = Object.fromEntries(
   Object.entries(options).map(([key, config]) => [key, config.values[0]]),
 ) as FormState;
@@ -115,6 +202,7 @@ const fieldOrder: OptionKey[] = ['motif', 'artistA', 'artistB', 'fusion', 'compo
 function App() {
   const [form, setForm] = useState<FormState>(initialState);
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['realistic', 'detailed']);
+  const [tagSelections, setTagSelections] = useState<Record<TagGroupKey, string[]>>(initialTagSelections);
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [negativePrompt, setNegativePrompt] = useState('');
   const [seed, setSeed] = useState('42');
@@ -138,6 +226,16 @@ function App() {
     if (status !== 'idle') setStatus('idle');
   }
 
+  function toggleTag(group: TagGroupKey, tag: string) {
+    setTagSelections((current) => ({
+      ...current,
+      [group]: current[group].includes(tag)
+        ? current[group].filter((item) => item !== tag)
+        : [...current[group], tag],
+    }));
+    if (status !== 'idle') setStatus('idle');
+  }
+
   function handleReferenceImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -154,19 +252,23 @@ function App() {
   }
 
   function generatePrompt() {
+    const selectedTagValues = (group: TagGroupKey) => tagSelections[group];
+    const styleTags = [...selectedStyles, ...selectedTagValues('style')];
+    const negativeTags = [...selectedTagValues('negativeTags'), negativePrompt.trim()]
+      .filter(Boolean)
+      .join(', ');
     const nextPrompt =
-      `${form.motif} im Stil von ${form.artistA} + ${form.artistB}, ` +
-      `Fusion: ${form.fusion}, ` +
-      `Komposition: ${form.composition}, ` +
-      `Licht: ${form.lighting}, ` +
-      `Farbwelt: ${form.palette}, ` +
-      `Detailgrad: ${form.detail}, ` +
-      `Art Style Details: ${selectedStyles.length ? selectedStyles.join(', ') : 'keine zusätzlichen Stil-Details'}, ` +
-      `Aspekt Ratio (--ar): ${aspectRatio}, ` +
-      `Negative Prompt: ${negativePrompt.trim() || 'keine'}, ` +
-      `Seed: ${seed || 'zufällig'}, ` +
-      `Anzahl Bilder (n): ${batchCount || '1'}, ` +
-      `Referenzbild: ${referenceImage ? `${referenceImage.name} — als Base Image für Komposition, Farben oder Stil` : 'keines'}, ` +
+      `Style: Motiv ${form.motif}; Künstler A (Basisstil) ${form.artistA}; Künstler B (Fusion) ${form.artistB}; ` +
+      `Fusionstyp ${form.fusion}; Farbwelt ${form.palette}; Detailgrad ${form.detail}; ` +
+      `Art Style Details ${styleTags.length ? styleTags.join(', ') : 'keine zusätzlichen Stil-Details'}; ` +
+      `Qualität & Auflösung ${selectedTagValues('quality').join(', ') || 'Standard'}. ` +
+      `Stimmung: ${selectedTagValues('mood').join(', ') || 'neutral'}; ` +
+      `Detail-Tags ${selectedTagValues('detailTags').join(', ') || 'keine'}; ` +
+      `Komposition ${form.composition}; Licht ${form.lighting}; Aspekt Ratio (--ar) ${aspectRatio}; ` +
+      `Technische Parameter ${selectedTagValues('technical').join(', ') || 'keine'}; ` +
+      `Negative Prompt ${negativeTags || 'keine'}; Seed ${seed || 'zufällig'}; ` +
+      `Anzahl Bilder (n) ${batchCount || '1'}; ` +
+      `Referenzbild ${referenceImage ? `${referenceImage.name} — als Base Image für Komposition, Farben oder Stil` : 'keines'}. ` +
       'Rendering: hochauflösend, sauber, klar.';
     setPrompt(nextPrompt);
     setStatus('generated');
@@ -186,6 +288,7 @@ function App() {
   function resetAll() {
     setForm(initialState);
     setSelectedStyles(['realistic', 'detailed']);
+    setTagSelections(initialTagSelections);
     setAspectRatio('4:5');
     setNegativePrompt('');
     setSeed('42');
@@ -235,7 +338,7 @@ function App() {
                 <p className="panel-kicker">Deine Zutaten</p>
                 <h2 className="panel-title">Baue deine Fusion</h2>
               </div>
-              <span className="step-count">14 Parameter</span>
+              <span className="step-count">20 Parameter</span>
             </div>
 
             <div className="field-grid">
@@ -281,6 +384,32 @@ function App() {
                     >
                       {style}
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="field field-wide">
+                <div className="tag-group-grid">
+                  {tagGroups.map((group) => (
+                    <div className="tag-group" key={group.key}>
+                      <div className="field-label">
+                        {group.label}
+                        <span>{group.values.length} Tags</span>
+                      </div>
+                      <div className="style-chips" aria-label={group.label}>
+                        {group.values.map((tag) => (
+                          <button
+                            className={`style-chip ${tagSelections[group.key].includes(tag) ? 'selected' : ''}`}
+                            type="button"
+                            key={tag}
+                            aria-pressed={tagSelections[group.key].includes(tag)}
+                            onClick={() => toggleTag(group.key, tag)}
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

@@ -1,0 +1,61 @@
+OPTIONS = {
+  subject: ["Portrait", "Landscape", "Architecture", "Animal", "Abstract", "Still Life", "Fantasy Scene", "Sci-Fi Scene"],
+  style: ["Photorealistic", "Oil Painting", "Watercolor", "Digital Art", "Pencil Sketch", "Anime", "Cinematic", 
+
+style: {
+    label: "Style",
+    tags: [
+      "photorealistic", "anime style", "digital art", "oil painting", "concept art",
+      "watercolor", "8k render", "fantasy art",
+      "avant-garde editorial", "high fashion editorial", "cinematic documentary",
+      "Vogue Italia aesthetic", "Peter Lindbergh style", "Mario Testino style",
+      "fine art photography", "street photography",
+      "romantic portrait", "glamour photography", "soft cinematic mood",
+      "tasteful fashion editorial", "luxury magazine aesthetic",
+    ],
+  },
+  mood: {
+    label: "Mood",
+    tags: [
+      "romantic atmosphere", "dreamy mood", "elegant", "warm and intimate",
+      "soft and graceful", "confident expression", "calm presence",
+      "poetic composition", "sophisticated tone", "gentle expression",
+    ],
+  },
+  detail: {
+    label: "Detail",
+    tags: [
+      "natural fabric texture", "soft skin highlights", "refined facial features",
+      "subtle jewelry", "flowing hair", "clean background", "gentle contrast",
+      "balanced color palette", "delicate shadows", "polished composition",
+    ],
+  },
+  quality: {
+    label: "Quality & Resolution",
+    tags: [
+      "masterpiece", "high detail", "8K resolution", "sharp focus on face",
+      "best quality", "intricate details", "professional", "award winning",
+      "ultra high resolution", "hyper detailed", "studio quality",
+      "crisp texture detail", "soft background bokeh",
+    ],
+  },
+  technical: {
+    label: "Technical Parameters",
+    tags: [
+      "guidance scale 1.5", "guidance scale 2.5", "guidance scale 3.5",
+      "--style raw", "--stylize 0", "--v 6",
+      "natural skin texture:1.3", "f/1.8 aperture", "f/2.0 aperture",
+      "ISO 400", "1/125s shutter speed", "wide open aperture",
+    ],
+  },
+};
+
+export const NEGATIVE_TAGS = [
+  "blurry", "low quality", "bad anatomy", "extra limbs", "deformed", "ugly",
+  "watermark", "signature", "text", "cropped",
+  "plastic skin", "waxy skin", "airbrushed", "over-smoothed face",
+  "perfect symmetry", "doll-like", "uncanny valley",
+  "artificial lighting", "glossy skin", "CGI", "3D render",
+  "cartoon", "anime", "illustration", "painting", "drawing",
+  "oversaturated colors", "studio lighting", "no makeup filter",
+  "deformed hands", "extra fingers", "mutated anatomy.

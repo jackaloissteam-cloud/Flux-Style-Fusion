@@ -11,13 +11,13 @@ description = "ZIP mit dem vollständigen React/Vite-App-Code inklusive der erwe
 [[outputs]]
 id = "CwOFx5Qinnvy-SxRfsVIB"
 uri = "file://.agents/outputs/flux-stil-fusion-generator.html"
-type = "unspecified"
-title = "Flux Stil-Fusion Generator – ausführbare HTML"
-description = "Einzelne HTML-Datei zum Herunterladen und direkten Öffnen im Browser. Enthält Generator, Stilparameter, Seitenverhältnis, Negative Prompt, Seed, Batch Count und Referenzbild-Vorschau."
+type = "text"
+title = "Flux Stil-Fusion Generator – erweiterte HTML"
+description = "Ausführbare HTML-Datei mit Subject-, Style-, Mood-, Detail-, Quality-, Technical- und Negative-Tag-Gruppen."
 
 [[outputs]]
 id = "KvVPh6ukSBWqHMeoAo9dV"
 uri = "file://.agents/outputs/flux-generator.zip"
 type = "unspecified"
-title = "Flux Stil-Fusion Generator – ZIP"
-description = "Kompaktes ZIP mit dem vollständigen React/Vite-Quellcode ohne node_modules und Build-Output."
+title = "Flux Stil-Fusion Generator – erweitertes ZIP"
+description = "Aktualisiertes Quellcode-ZIP mit allen Optionsgruppen aus der hochgeladenen OPTIONS-Datei."
