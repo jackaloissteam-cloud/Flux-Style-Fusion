@@ -217,6 +217,10 @@
   background: rgba(250, 249, 243, 0.6);
 }
 
+.download-link {
+  color: var(--coral);
+}
+
 .page-content {
   max-width: 1380px;
   margin: 0 auto;

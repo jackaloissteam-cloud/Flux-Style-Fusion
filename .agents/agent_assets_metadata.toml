@@ -21,3 +21,10 @@ uri = "file://.agents/outputs/flux-generator.zip"
 type = "unspecified"
 title = "Flux Stil-Fusion Generator – erweitertes ZIP"
 description = "Aktualisiertes Quellcode-ZIP mit allen Optionsgruppen aus der hochgeladenen OPTIONS-Datei."
+
+[[outputs]]
+id = "nYUtVZt1YwBIt43LQ8Occ"
+uri = "file://.agents/outputs/flux-generator-download.zip"
+type = "unspecified"
+title = "Flux Stil-Fusion Generator – ZIP Download"
+description = "Direkter Download der aktualisierten React/Vite-App mit allen erweiterten Optionsgruppen."

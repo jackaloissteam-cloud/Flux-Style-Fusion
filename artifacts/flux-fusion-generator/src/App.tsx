@@ -308,6 +308,9 @@ function App() {
         <nav className="topnav" aria-label="Hauptnavigation">
           <a className="nav-link" href="#studio" data-testid="link-studio">Generator</a>
           <a className="nav-link" href="#about" data-testid="link-about">Arbeitsweise</a>
+          <a className="nav-link download-link" href={`${import.meta.env.BASE_URL}flux-generator-download.zip`} download>
+            ZIP herunterladen
+          </a>
           <button className="nav-button" type="button" onClick={resetAll} data-testid="button-reset-top">
             <RotateCcw size={14} />
             Zurücksetzen
