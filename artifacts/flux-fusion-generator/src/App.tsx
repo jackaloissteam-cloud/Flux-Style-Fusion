@@ -266,6 +266,57 @@ const crossGroupConflicts: Array<[TagGroupKey, string, TagGroupKey, string]> = [
   ['style', '3D', 'negativeTags', '3D render'],
 ];
 
+type PromptAudit = {
+  duplicates: string[];
+  conflicts: string[];
+};
+
+const emptyPromptAudit: PromptAudit = { duplicates: [], conflicts: [] };
+
+const semanticAliases: Record<string, string> = {
+  fotorealistisch: 'photorealistic',
+  'realistic photograph': 'photorealistic',
+  'realistisches foto': 'photorealistic',
+  '8k auflösung': '8k resolution',
+  hochdetailliert: 'intricate details',
+  'weicher hintergrund bokeh': 'soft background bokeh',
+};
+
+function normalizePromptValue(value: string) {
+  const normalized = value.toLocaleLowerCase('de-DE').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  return semanticAliases[normalized] ?? normalized;
+}
+
+function auditPrompt(
+  selections: Record<TagGroupKey, string[]>,
+  negativePrompt: string,
+): PromptAudit {
+  const entries = Object.entries(selections).flatMap(([group, values]) =>
+    values.map((value) => ({ group, value, key: normalizePromptValue(value) })),
+  );
+  const manualNegative = negativePrompt
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => ({ group: 'Negative Prompt', value, key: normalizePromptValue(value) }));
+  const allEntries = [...entries, ...manualNegative];
+  const duplicates = [...new Set(
+    allEntries
+      .filter((entry, index, values) => values.some((other, otherIndex) => (
+        otherIndex !== index && other.key && other.key === entry.key
+      )))
+      .map((entry) => entry.value),
+  )];
+  const conflicts: string[] = [];
+  for (const [leftGroup, leftTag, rightGroup, rightTag] of crossGroupConflicts) {
+    const leftSelected = selections[leftGroup].some((value) => normalizePromptValue(value) === normalizePromptValue(leftTag));
+    const rightSelected = selections[rightGroup].some((value) => normalizePromptValue(value) === normalizePromptValue(rightTag))
+      || manualNegative.some((entry) => entry.key === normalizePromptValue(rightTag));
+    if (leftSelected && rightSelected) conflicts.push(`${leftTag} ↔ ${rightTag}`);
+  }
+  return { duplicates, conflicts };
+}
+
 const initialState: FormState = Object.fromEntries(
   Object.entries(options).map(([key, config]) => [key, config.values[0]]),
 ) as FormState;
@@ -282,6 +333,7 @@ function App() {
   const [referenceImage, setReferenceImage] = useState<File | null>(null);
   const [referencePreview, setReferencePreview] = useState('');
   const [prompt, setPrompt] = useState('');
+  const [promptAudit, setPromptAudit] = useState<PromptAudit>(emptyPromptAudit);
   const [status, setStatus] = useState<'idle' | 'generated' | 'copied' | 'error'>('idle');
 
   const promptLength = useMemo(() => prompt.length, [prompt]);
@@ -338,18 +390,25 @@ function App() {
       .filter(Boolean)
       .join(', ');
     const nextPrompt =
-      `Style: Motiv ${form.motif}; Künstler A (Basisstil) ${form.artistA}; Künstler B (Fusion) ${form.artistB}; ` +
-      `Fusionstyp ${form.fusion}; Farbwelt ${form.palette}; Detailgrad ${form.detail}; ` +
-      `Art Style Details ${styleTags.length ? styleTags.join(', ') : 'keine zusätzlichen Stil-Details'}; ` +
-      `Qualität & Auflösung ${selectedTagValues('quality').join(', ') || 'Standard'}. ` +
-      `Stimmung: ${selectedTagValues('mood').join(', ') || 'neutral'}; ` +
-      `Detail-Tags ${selectedTagValues('detailTags').join(', ') || 'keine'}; ` +
-      `Komposition ${form.composition}; Licht ${form.lighting}; Aspekt Ratio (--ar) ${aspectRatio}; ` +
-      `Technische Parameter ${selectedTagValues('technical').join(', ') || 'keine'}; ` +
-      `Negative Prompt ${negativeTags || 'keine'}; Seed ${seed || 'zufällig'}; ` +
-      `Anzahl Bilder (n) ${batchCount || '1'}; ` +
-      `Referenzbild ${referenceImage ? `${referenceImage.name} — als Base Image für Komposition, Farben oder Stil` : 'keines'}. ` +
-      'Rendering: hochauflösend, sauber, klar.';
+      `STYLE\n` +
+      `Motiv: ${form.motif}\nKünstler A: ${form.artistA}\nKünstler B: ${form.artistB}\n` +
+      `Fusionstyp: ${form.fusion}\nFarbwelt: ${form.palette}\nDetailgrad: ${form.detail}\n` +
+      `Style-Tags: ${styleTags.join(', ') || 'keine'}\n` +
+      `Kamera & Objektiv: ${selectedTagValues('camera').join(', ') || 'keine'}\n` +
+      `Editorial & Referenzen: ${selectedTagValues('editorial').join(', ') || 'keine'}\n` +
+      `Quality & Resolution: ${selectedTagValues('quality').join(', ') || 'Standard'}\n` +
+      `Finaler Stil & Nachbearbeitung: ${selectedTagValues('postProcessing').join(', ') || 'keine'}\n\n` +
+      `STIMMUNG\n` +
+      `Mood: ${selectedTagValues('mood').join(', ') || 'neutral'}\n` +
+      `Szene & Atmosphäre: ${selectedTagValues('environment').join(', ') || 'keine'}\n` +
+      `Menschliche Details: ${selectedTagValues('human').join(', ') || 'keine'}\n` +
+      `Detail-Tags: ${selectedTagValues('detailTags').join(', ') || 'keine'}\n` +
+      `Komposition: ${form.composition}\nLicht: ${form.lighting}\n` +
+      `Aspekt Ratio (--ar): ${aspectRatio}\nTechnische Parameter: ${selectedTagValues('technical').join(', ') || 'keine'}\n` +
+      `Negative Prompt: ${negativeTags || 'keine'}\nSeed: ${seed || 'zufällig'}\n` +
+      `Anzahl Bilder (n): ${batchCount || '1'}\n` +
+      `Referenzbild: ${referenceImage ? `${referenceImage.name} — als Base Image für Komposition, Farben oder Stil` : 'keines'}`;
+    setPromptAudit(auditPrompt(tagSelections, negativePrompt));
     setPrompt(nextPrompt);
     setStatus('generated');
     window.setTimeout(() => document.getElementById('prompt-output')?.focus(), 0);
@@ -374,6 +433,7 @@ function App() {
     setBatchCount('1');
     removeReferenceImage();
     setPrompt('');
+    setPromptAudit(emptyPromptAudit);
     setStatus('idle');
   }
 
@@ -627,6 +687,21 @@ function App() {
                     {status === 'copied' ? <Check size={14} /> : <Copy size={14} />}
                     {status === 'copied' ? 'Kopiert' : 'Kopieren'}
                   </button>
+                </div>
+                <div className={`prompt-audit ${promptAudit.duplicates.length || promptAudit.conflicts.length ? 'has-issues' : 'is-clean'}`} data-testid="prompt-audit">
+                  {promptAudit.duplicates.length || promptAudit.conflicts.length ? (
+                    <>
+                      <strong>Prompt-Prüfung</strong>
+                      {promptAudit.duplicates.length > 0 && (
+                        <span>Doppelte Inhalte: {promptAudit.duplicates.join(', ')}</span>
+                      )}
+                      {promptAudit.conflicts.length > 0 && (
+                        <span>Konflikte: {promptAudit.conflicts.join(', ')}</span>
+                      )}
+                    </>
+                  ) : (
+                    <><Check size={13} /> Prompt-Prüfung: keine doppelten Inhalte oder Konflikte erkannt.</>
+                  )}
                 </div>
               </div>
             )}

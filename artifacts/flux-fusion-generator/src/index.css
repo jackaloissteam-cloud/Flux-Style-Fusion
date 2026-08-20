@@ -811,6 +811,26 @@
   font-size: 10px;
 }
 
+.prompt-audit {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.prompt-audit.is-clean {
+  color: var(--lime);
+  background: rgba(182, 211, 98, 0.08);
+}
+
+.prompt-audit.has-issues {
+  color: #ffd0c4;
+  background: rgba(242, 106, 79, 0.14);
+}
+
 .copy-button {
   display: inline-flex;
   align-items: center;
