@@ -1,0 +1,79 @@
+Setze alle Parameter in Style und Stimmung ein
+Ich passe die Prompt-Struktur so an, dass wirklich jeder Parameter in zwei klaren Blöcken landet: Style für Motiv, Künstler, Fusion, Farbwelt, Detailgrad und Stil-Details sowie Stimmung für Komposition, Licht, Seitenverhältnis, Negative Prompt, Seed, Batch Count und Referenzbild. Ich aktualisiere dabei die App und die ausführbare HTML-Version gleichermaßen.
+Die Prompt-Ausgabe ist jetzt in die beiden Bereiche Style und Stimmung gegliedert, ohne Parameter zu verlieren. Ich prüfe den Build, aktualisiere danach auch das ZIP mit dieser Änderung und lade die App neu.
+Die Prüfung ist erfolgreich: TypeScript und Produktions-Build laufen ohne Fehler. Ich aktualisiere jetzt das ZIP und starte die Vorschau neu, damit die neue Style-/Stimmung-Struktur aktiv ist.
+Die aktualisierte Version läuft. Ich prüfe noch die sichtbare Vorschau und stelle anschließend die aktualisierte HTML-Datei sowie das neue ZIP erneut bereit.
+Die finale Prüfung ist sauber: Vorschau läuft, TypeScript und Produktions-Build sind erfolgreich. Ich stelle jetzt die aktualisierte App sowie die beiden aktualisierten Download-Dateien bereit.
+Erledigt.
+
+Die Prompt-Ausgabe enthält jetzt alle Parameter in zwei klaren Bereichen:
+
+Style
+
+Motiv
+Künstler A und B
+Fusionstyp
+Farbwelt
+Detailgrad
+Art Style Details
+Stimmung
+
+Komposition
+Licht
+Aspekt Ratio
+Negative Prompt
+Seed
+Anzahl Bilder
+Referenzbild
+Die Änderung ist in der App, der ausführbaren HTML-Datei und im aktualisierten ZIP enthalten. Build und Preview laufen erfolgreich.
+Ich lese die neu hochgeladene Optionsliste ein und gleiche sie mit den bestehenden Auswahlfeldern des Generators ab. Danach ergänze ich fehlende Werte an den passenden Stellen, ohne vorhandene Optionen zu entfernen.
+Die Datei enthält eine größere, strukturierte Optionssammlung mit neuen Bereichen für Style, Mood, Detail, Qualität, technische Parameter und vordefinierte negative Tags. Ich integriere diese als auswählbare Mehrfach-Tags in den Generator und übernehme die Subject-Optionen zusätzlich in das Motivfeld.
+Ich übernehme die neuen Gruppen jetzt auch in die eigenständige HTML-Datei. So bleiben App und Download-Version vollständig gleich und enthalten dieselben Subject-, Style-, Mood-, Detail-, Qualitäts-, Technik- und Negative-Tag-Optionen.
+Die neuen Kategorien sind jetzt eingebaut. Ich prüfe als Nächstes den React-Build, aktualisiere das ZIP und starte die Vorschau neu, damit die erweiterten Tag-Gruppen direkt getestet werden können.
+Der Build ist erfolgreich. Ich starte die Web-App jetzt neu und prüfe die aktualisierte Oberfläche mit den zusätzlichen Optionsgruppen.
+Die erweiterten Gruppen sind sichtbar und der Preview-Dienst läuft sauber. Ich prüfe noch die eigenständige HTML-Datei auf JavaScript-Syntax und stelle danach App, HTML und ZIP in ihrer aktuellen Version bereit.
+Die Checks sind erfolgreich: React-Build, Preview und die standalone HTML-Syntax sind in Ordnung. Ich stelle jetzt die aktualisierte App und die beiden aktuellen Dateien bereit.
+Die hochgeladene Optionsdatei ist vollständig integriert.
+
+Neu enthalten:
+
+Erweiterte Motiv-/Subject-Auswahl
+Style-Tags
+Mood-/Stimmung-Tags
+Detail-Tags
+Quality & Resolution
+Technical Parameters
+Negative Tags
+Alle bestehenden Stiloptionen bleiben erhalten
+Alle ausgewählten Werte werden in den generierten Prompt übernommen
+Negative Tags werden automatisch mit dem freien Negative Prompt kombiniert
+Die Aktualisierung ist enthalten in:
+
+der laufenden React-App
+der ausführbaren HTML-Datei
+dem aktualisierten ZIP-Download
+Build, Preview und HTML-Syntaxprüfung waren erfolgreich.
+ZIP nicht downloadbar
+Ich prüfe zuerst, ob die ZIP-Datei aktuell vorhanden und lesbar ist, und stelle sie anschließend erneut als Download bereit.
+Die ZIP-Datei ist intakt und lässt sich intern vollständig prüfen. Ich stelle sie jetzt unter einem neuen, eindeutigen Dateinamen erneut als Download bereit.
+Da die Datei selbst intakt ist, ergänze ich zusätzlich einen direkten Download-Link in der laufenden App. Damit ist der ZIP-Download nicht mehr von der Datei-Karte abhängig.
+Der direkte Link ist jetzt eingebaut und die ZIP liegt als statische Datei in der App. Ich führe noch Build und Download-Test durch, danach ist der Download direkt über „ZIP herunterladen“ erreichbar.
+Der direkte Download-Test liefert jetzt 200 OK mit Content-Type: application/zip. Ich mache noch einen kurzen visuellen Check des neuen Links in der Navigation.
+Der ZIP-Download ist jetzt repariert.
+
+In der App gibt es oben rechts den neuen Link:
+
+„ZIP herunterladen“
+
+Der Download wurde geprüft:
+
+Datei ist gültig und vollständig
+HTTP-Status 200 OK
+Download wird als application/zip ausgeliefert
+React-Build und Preview laufen erfolgreich
+Die ZIP-Datei kann jetzt direkt über die Navigation der App heruntergeladen werden.
+Ich sehe dass viele Parameter mehrfach vorhanden und kollidieren können, prüfe das und bereinigen und stelle aktuelle .html bereit
+Ich auditieren jetzt die gesamte Optionslogik auf doppelte oder semantisch kollidierende Werte. Danach vereinheitliche ich die Gruppen, entferne Redundanzen aus React und standalone HTML und stelle die aktuelle HTML-Datei neu bereit.
+Beim Audit sind die Hauptkollisionen klar geworden: doppelte Sprachvarianten bei Subjects, ein separates altes Style-Chipset zusätzlich zur neuen Style-Gruppe, sowie Überschneidungen zwischen Detailgrad/Qualität und positiven/negativen Tags. Ich vereinheitliche diese jetzt auf eine kanonische Liste und mache widersprüchliche Technik-/Negative-Tags automatisch gegenseitig exklusiv.
+You've reached your daily free quota limit. It will reset at 12:00 AM UTC.
+Bitte alle möglichen Parameter einfügen, zusätzlich eine prompt Prüfung auf doppelte inhalte

@@ -25,22 +25,15 @@ type OptionKey =
 
 type FormState = Record<OptionKey, string>;
 
-type TagGroupKey = 'style' | 'mood' | 'detailTags' | 'quality' | 'technical' | 'negativeTags';
+type TagGroupKey =
+  | 'style' | 'camera' | 'editorial' | 'mood' | 'environment' | 'human'
+  | 'detailTags' | 'quality' | 'technical' | 'postProcessing' | 'negativeTags';
 
 type TagGroup = {
   key: TagGroupKey;
   label: string;
   values: string[];
 };
-
-const styleDetails = [
-  'realistic', 'photorealistic', 'digital draw style', 'detailed', 'artistic',
-  'Watercolor', 'cyberpunk', 'Aquarell', 'Kreide', 'Cartoon', 'Scetch',
-  'Ölgemälde', 'Bleistiftzeichnung', 'Strassenkunst', 'barock', 'Malbuch',
-  'Jugendstil', 'anthropomorph', 'vintage Boho', 'mittelalterlich', 'surreal',
-  'gruselig', 'tintenskizze', 'farbspritzer', 'niedlicher Charakter',
-  'miniatur diorama', 'Popart', 'inkpunk', '3D',
-];
 
 const aspectRatios = [
   { label: 'Portrait', value: '4:5' },
@@ -54,9 +47,8 @@ const options: Record<OptionKey, { label: string; values: string[] }> = {
   motif: {
     label: 'Motiv',
     values: [
-      'Portrait', 'Landschaft', 'Landscape', 'Architektur', 'Architecture', 'Animal',
-      'Abstract', 'Still Life', 'Fantasy Scene', 'Sci-Fi Scene', 'Sci-Fi', 'Fantasy',
-      'Surrealismus',
+      'Portrait', 'Landscape', 'Architecture', 'Animal', 'Abstract', 'Still Life',
+      'Fantasy Scene', 'Sci-Fi Scene',
     ],
   },
   artistA: {
@@ -123,12 +115,37 @@ const tagGroups: TagGroup[] = [
     key: 'style',
     label: 'Style',
     values: [
-      'photorealistic', 'anime style', 'digital art', 'oil painting', 'concept art',
-      'watercolor', '8k render', 'fantasy art', 'avant-garde editorial',
+      'photorealistic', 'digital art', 'artistic', 'watercolor', 'oil painting',
+      'chalk drawing', 'pencil sketch', 'street art', 'baroque', 'coloring book',
+      'Art Nouveau', 'anthropomorphic', 'vintage boho', 'medieval', 'surreal',
+      'scary', 'ink sketch', 'paint splashes', 'cute character',
+      'miniature diorama', 'pop art', 'inkpunk', '3D', 'cyberpunk', 'cartoon',
+      'anime style', 'concept art', 'fantasy art', 'avant-garde editorial',
       'high fashion editorial', 'cinematic documentary', 'Vogue Italia aesthetic',
       'Peter Lindbergh style', 'Mario Testino style', 'fine art photography',
       'street photography', 'romantic portrait', 'glamour photography',
       'soft cinematic mood', 'tasteful fashion editorial', 'luxury magazine aesthetic',
+    ],
+  },
+  {
+    key: 'camera',
+    label: 'Kamera & Objektiv',
+    values: [
+      'raw iPhone photo', 'casual smartphone photo', 'Selfie aufgenommen mit iPhone 15',
+      'lässiges Handyfoto', 'IMG_XXXX.HEIC', 'image_1025.CR2', 'Canon EOS 5D',
+      'Nikon Z9', 'Sony A7R IV', '50mm Objektiv f/1.8', '85mm Objektiv',
+      'geringe Tiefenschärfe', 'candid shot', 'realistic photograph',
+    ],
+  },
+  {
+    key: 'editorial',
+    label: 'Editorial & Referenzen',
+    values: [
+      'avantgardistische Editorial-Fotografie', 'High-Fashion-Editorial',
+      'cineastisches Mode-Editorial', 'Vogue Italia', 'Numéro', 'Interview Magazine',
+      'Harper’s Bazaar', 'W Magazine', 'i-D', 'Another Magazine', 'Dazed',
+      'Love Magazine', 'CR Fashion Book', 'Mario Testino', 'Peter Lindbergh',
+      'Mert & Marcus', 'Inez & Vinoodh', 'Tim Walker', 'Elizaveta Porodina',
     ],
   },
   {
@@ -141,8 +158,31 @@ const tagGroups: TagGroup[] = [
     ],
   },
   {
+    key: 'environment',
+    label: 'Szene & Atmosphäre',
+    values: [
+      'minimalistisches Studio mit Betonwänden', 'industrielles Loft',
+      'verlassener Strand bei Sonnenuntergang', 'modernistische Villa mit Marmor und Glas',
+      'cineastisches Boudoir', 'romantische Atmosphäre', 'avantgardistische Atmosphäre',
+      'raffinierte und kraftvolle Stimmung', 'dichte Theaternebel-Atmosphäre',
+      'schimmernder Kräuterdampf',
+    ],
+  },
+  {
+    key: 'human',
+    label: 'Menschliche Details',
+    values: [
+      'natürliche Hautstruktur mit sichtbaren Poren', 'kleine Unreinheiten',
+      'feine Falten', 'realistische Hautdetails', 'abstehende Haare',
+      'leichte Gesichtsasymmetrie', 'spontaner Gesichtsausdruck', 'echtes Lächeln',
+      'neutraler Blick', 'in Bewegung aufgenommen', 'leichte Kopfneigung',
+      'natürliche Haltung', 'nicht perfekt zentriert', 'professionelles Model',
+      'selbstbewusste und elegante Pose',
+    ],
+  },
+  {
     key: 'detailTags',
-    label: 'Detail',
+    label: 'Detail-Tags',
     values: [
       'natural fabric texture', 'soft skin highlights', 'refined facial features',
       'subtle jewelry', 'flowing hair', 'clean background', 'gentle contrast',
@@ -153,9 +193,9 @@ const tagGroups: TagGroup[] = [
     key: 'quality',
     label: 'Quality & Resolution',
     values: [
-      'masterpiece', 'high detail', '8K resolution', 'sharp focus on face',
-      'best quality', 'intricate details', 'professional', 'award winning',
-      'ultra high resolution', 'hyper detailed', 'studio quality',
+      'masterpiece', '8K resolution', 'sharp focus on face', 'best quality',
+      'intricate details', 'professional', 'award winning', 'ultra high resolution',
+      'studio quality',
       'crisp texture detail', 'soft background bokeh',
     ],
   },
@@ -167,6 +207,16 @@ const tagGroups: TagGroup[] = [
       '--style raw', '--stylize 0', '--v 6', 'natural skin texture:1.3',
       'f/1.8 aperture', 'f/2.0 aperture', 'ISO 400', '1/125s shutter speed',
       'wide open aperture',
+    ],
+  },
+  {
+    key: 'postProcessing',
+    label: 'Finaler Stil & Nachbearbeitung',
+    values: [
+      'unfiltered', 'authentic', 'no style raw', 'natürliches Bildrauschen',
+      'subtile Bewegungsunschärfe', 'leichte Lens Flares', 'natürliches Kantenlicht',
+      'weiche Schatten von der Seite', 'Color Grading', 'maximale Auflösung',
+      'fotorealistische Details', 'Editorial-Meisterwerk',
     ],
   },
   {
@@ -186,12 +236,35 @@ const tagGroups: TagGroup[] = [
 
 const initialTagSelections: Record<TagGroupKey, string[]> = {
   style: ['photorealistic'],
+  camera: [],
+  editorial: [],
   mood: [],
+  environment: [],
+  human: [],
   detailTags: [],
   quality: [],
   technical: [],
+  postProcessing: [],
   negativeTags: [],
 };
+
+const exclusiveTagGroups: Partial<Record<TagGroupKey, string[][]>> = {
+  technical: [
+    ['guidance scale 1.5', 'guidance scale 2.5', 'guidance scale 3.5'],
+    ['f/1.8 aperture', 'f/2.0 aperture', 'wide open aperture'],
+  ],
+};
+
+const crossGroupConflicts: Array<[TagGroupKey, string, TagGroupKey, string]> = [
+  ['style', 'anime style', 'negativeTags', 'anime'],
+  ['style', 'cartoon', 'negativeTags', 'cartoon'],
+  ['style', 'oil painting', 'negativeTags', 'painting'],
+  ['style', 'watercolor', 'negativeTags', 'painting'],
+  ['style', 'pencil sketch', 'negativeTags', 'drawing'],
+  ['style', 'chalk drawing', 'negativeTags', 'drawing'],
+  ['style', 'ink sketch', 'negativeTags', 'drawing'],
+  ['style', '3D', 'negativeTags', '3D render'],
+];
 
 const initialState: FormState = Object.fromEntries(
   Object.entries(options).map(([key, config]) => [key, config.values[0]]),
@@ -201,7 +274,6 @@ const fieldOrder: OptionKey[] = ['motif', 'artistA', 'artistB', 'fusion', 'compo
 
 function App() {
   const [form, setForm] = useState<FormState>(initialState);
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(['realistic', 'detailed']);
   const [tagSelections, setTagSelections] = useState<Record<TagGroupKey, string[]>>(initialTagSelections);
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [negativePrompt, setNegativePrompt] = useState('');
@@ -219,20 +291,28 @@ function App() {
     if (status !== 'idle') setStatus('idle');
   }
 
-  function toggleStyle(style: string) {
-    setSelectedStyles((current) =>
-      current.includes(style) ? current.filter((item) => item !== style) : [...current, style],
-    );
-    if (status !== 'idle') setStatus('idle');
-  }
-
   function toggleTag(group: TagGroupKey, tag: string) {
-    setTagSelections((current) => ({
-      ...current,
-      [group]: current[group].includes(tag)
-        ? current[group].filter((item) => item !== tag)
-        : [...current[group], tag],
-    }));
+    setTagSelections((current) => {
+      if (current[group].includes(tag)) {
+        return { ...current, [group]: current[group].filter((item) => item !== tag) };
+      }
+
+      const next = { ...current, [group]: [...current[group], tag] };
+      for (const exclusiveGroup of exclusiveTagGroups[group] ?? []) {
+        if (exclusiveGroup.includes(tag)) {
+          next[group] = next[group].filter((item) => item === tag || !exclusiveGroup.includes(item));
+        }
+      }
+      for (const [leftGroup, leftTag, rightGroup, rightTag] of crossGroupConflicts) {
+        if (group === leftGroup && tag === leftTag) {
+          next[rightGroup] = next[rightGroup].filter((item) => item !== rightTag);
+        }
+        if (group === rightGroup && tag === rightTag) {
+          next[leftGroup] = next[leftGroup].filter((item) => item !== leftTag);
+        }
+      }
+      return next;
+    });
     if (status !== 'idle') setStatus('idle');
   }
 
@@ -253,7 +333,7 @@ function App() {
 
   function generatePrompt() {
     const selectedTagValues = (group: TagGroupKey) => tagSelections[group];
-    const styleTags = [...selectedStyles, ...selectedTagValues('style')];
+    const styleTags = selectedTagValues('style');
     const negativeTags = [...selectedTagValues('negativeTags'), negativePrompt.trim()]
       .filter(Boolean)
       .join(', ');
@@ -287,7 +367,6 @@ function App() {
 
   function resetAll() {
     setForm(initialState);
-    setSelectedStyles(['realistic', 'detailed']);
     setTagSelections(initialTagSelections);
     setAspectRatio('4:5');
     setNegativePrompt('');
@@ -341,7 +420,7 @@ function App() {
                 <p className="panel-kicker">Deine Zutaten</p>
                 <h2 className="panel-title">Baue deine Fusion</h2>
               </div>
-              <span className="step-count">20 Parameter</span>
+              <span className="step-count">19 Parameter</span>
             </div>
 
             <div className="field-grid">
@@ -370,27 +449,6 @@ function App() {
             </div>
 
             <div className="advanced-fields">
-              <div className="field field-wide">
-                <div className="field-label">
-                  Art Style Details
-                  <span>09</span>
-                </div>
-                <p className="field-help">Wähle einen oder mehrere visuelle Stilimpulse.</p>
-                <div className="style-chips" aria-label="Art Style Details">
-                  {styleDetails.map((style) => (
-                    <button
-                      className={`style-chip ${selectedStyles.includes(style) ? 'selected' : ''}`}
-                      type="button"
-                      key={style}
-                      aria-pressed={selectedStyles.includes(style)}
-                      onClick={() => toggleStyle(style)}
-                    >
-                      {style}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="field field-wide">
                 <div className="tag-group-grid">
                   {tagGroups.map((group) => (
