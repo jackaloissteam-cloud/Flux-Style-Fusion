@@ -7,13 +7,21 @@ uri = "file://.agents/outputs/flux-fusion-generator-code.zip"
 type = "unspecified"
 title = "Flux Stil-Fusion Generator – Quellcode"
 description = "ZIP mit dem vollständigen React/Vite-App-Code inklusive der erweiterten Prompt-Parameter, Upload-Vorschau und Konfiguration. Node-Module und Build-Output sind nicht enthalten."
+logical_id = "d2e35da0-d40a-43da-b581-e6994b770b55"
 
 [[outputs]]
 id = "CwOFx5Qinnvy-SxRfsVIB"
 uri = "file://.agents/outputs/flux-stil-fusion-generator.html"
 type = "text"
-title = "Flux Stil-Fusion Generator – erweiterte HTML"
-description = "Ausführbare HTML-Datei mit Subject-, Style-, Mood-, Detail-, Quality-, Technical- und Negative-Tag-Gruppen."
+title = "Flux Stil-Fusion Generator – bereinigte aktuelle HTML"
+description = "Standalone HTML mit kanonischen Parametern, erweiterten Style-/Stimmungsoptionen und Prompt-Duplikatprüfung."
+logical_id = "0611bca9-72b0-4e2b-a717-5b17c8026ee8"
+content_hash = "sha256:23ccad0cf60b88e2e7daad286aa072757ef3c59b5fa461bcabfd1c51dd2c299d"
+size = 17597
+mtime_ms = 1787312724573
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:3f4a31f8-aa77-4084-babd-e074e21f1671/0611bca9-72b0-4e2b-a717-5b17c8026ee8/c9b3b7e3-f46b-497e-8952-c6788b2bc6a8"
+storage_version_token = "1787312766236781"
+content_type = "text/html"
 
 [[outputs]]
 id = "KvVPh6ukSBWqHMeoAo9dV"
@@ -21,10 +29,18 @@ uri = "file://.agents/outputs/flux-generator.zip"
 type = "unspecified"
 title = "Flux Stil-Fusion Generator – erweitertes ZIP"
 description = "Aktualisiertes Quellcode-ZIP mit allen Optionsgruppen aus der hochgeladenen OPTIONS-Datei."
+logical_id = "80a71170-1536-49a4-85bf-87e9d47ca35d"
 
 [[outputs]]
 id = "nYUtVZt1YwBIt43LQ8Occ"
 uri = "file://.agents/outputs/flux-generator-download.zip"
 type = "unspecified"
-title = "Flux Stil-Fusion Generator – ZIP Download"
-description = "Direkter Download der aktualisierten React/Vite-App mit allen erweiterten Optionsgruppen."
+title = "Flux Stil-Fusion Generator – aktuelles ZIP"
+description = "Aktualisiertes ZIP der bereinigten React/Vite-App inklusive direktem Download-Link."
+logical_id = "e5ad26c6-a1b8-46f5-91ef-29d75552a908"
+content_hash = "sha256:04f9255ecdf4a697360ce6b0471851593a5b46b66caddc83a85b4e4ee2ad4b26"
+size = 86091
+mtime_ms = 1787312744048
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:3f4a31f8-aa77-4084-babd-e074e21f1671/e5ad26c6-a1b8-46f5-91ef-29d75552a908/f75e117e-1455-458e-bc2a-5ef40ce79f8d"
+storage_version_token = "1787312766908314"
+content_type = "application/octet-stream"
