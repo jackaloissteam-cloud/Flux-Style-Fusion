@@ -1,1 +1,2 @@
 - [Flux generator inputs](flux-generator-inputs.md) — advanced settings and reference-image metadata stay client-side until an image service is requested.
+- [pnpm bootstrap mismatch](pnpm-version-bootstrap.md) — if the workspace's requested pnpm version cannot bootstrap, disabling automatic manager switching can restore workflows.
