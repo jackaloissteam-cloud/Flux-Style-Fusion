@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: generation
+    description: Server-side FLUX image generation
 paths:
   /healthz:
     get:
@@ -24,6 +26,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /generate/status:
+    get:
+      operationId: getGenerationStatus
+      tags: [generation]
+      summary: Get image generation configuration
+      responses:
+        "200":
+          description: Provider readiness without exposing credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerationStatus"
+  /generate:
+    post:
+      operationId: generateImages
+      tags: [generation]
+      summary: Generate images with a configured FLUX provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateImageInput"
+      responses:
+        "200":
+          description: Generated image data and metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateImageResult"
+        "400":
+          description: Invalid generation request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Generation access code is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: The selected provider failed to generate images
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Generation is not explicitly enabled and configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +89,117 @@ components:
           type: string
       required:
         - status
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    ReferenceImageInput:
+      type: object
+      properties:
+        data:
+          type: string
+          minLength: 1
+          maxLength: 8388608
+          description: Base64-encoded image bytes without a data URI prefix
+        mimeType:
+          type: string
+          enum: [image/png, image/jpeg, image/webp]
+      required: [data, mimeType]
+    GenerateImageInput:
+      type: object
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+          maxLength: 8000
+        negativePrompt:
+          type: string
+          maxLength: 2000
+        seed:
+          type: ["number", "null"]
+          multipleOf: 1
+          minimum: 0
+          maximum: 2147483647
+        count:
+          type: number
+          multipleOf: 1
+          minimum: 1
+          maximum: 4
+        guidanceScale:
+          type: number
+          minimum: 1
+          maximum: 20
+        inferenceSteps:
+          type: number
+          multipleOf: 1
+          minimum: 1
+          maximum: 60
+        strength:
+          type: number
+          minimum: 0
+          maximum: 1
+        outputFormat:
+          type: string
+          enum: [jpeg, png]
+        aspectRatio:
+          type: string
+          enum: ["1:1", "4:5", "4:3", "9:16", "5:3"]
+        referenceImage:
+          oneOf:
+            - $ref: "#/components/schemas/ReferenceImageInput"
+            - type: "null"
+        accessCode:
+          type: string
+          minLength: 1
+          maxLength: 256
+      required: [prompt, count, aspectRatio, guidanceScale, inferenceSteps, strength, outputFormat, accessCode]
+    GenerationStatus:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        provider:
+          type: ["string", "null"]
+          enum: [fal, huggingface, null]
+        model:
+          type: ["string", "null"]
+        supportsReferenceImage:
+          type: boolean
+        reason:
+          type: ["string", "null"]
+      required: [enabled, provider, model, supportsReferenceImage, reason]
+    GeneratedImage:
+      type: object
+      properties:
+        data:
+          type: string
+          description: Base64-encoded image bytes
+        mimeType:
+          type: string
+          enum: [image/png, image/jpeg, image/webp]
+        seed:
+          type: ["number", "null"]
+          multipleOf: 1
+      required: [data, mimeType]
+    GenerateImageResult:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum: [fal, huggingface]
+        model:
+          type: string
+        images:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/GeneratedImage"
+        warnings:
+          type: array
+          items:
+            type: string
+      required: [provider, model, images, warnings]
 
