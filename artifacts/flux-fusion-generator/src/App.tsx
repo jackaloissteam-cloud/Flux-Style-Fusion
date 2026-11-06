@@ -17,7 +17,7 @@ type SavedPreset = { name: string; settings: Settings };
 type Settings = {
   form: FormState; tags: Record<TagGroupKey, string[]>; aspect: string; negative: string;
   seed: string; count: string; weight: number; guidance: string; steps: string;
-  strength: string; format: 'jpeg' | 'png'; language: PromptLanguage;
+  strength: string; format: 'jpeg' | 'png'; language: PromptLanguage; customArtists?: string[];
 };
 const presetKey = 'flux-fusion-presets-v2';
 const settingsKey = 'flux-fusion-settings-v2';
@@ -67,8 +67,8 @@ function App() {
   const settings: Settings = useMemo(() => ({
     form, tags: tagSelections, aspect: aspectRatio, negative: negativePrompt, seed,
     count: batchCount, weight: artistAWeight, guidance: guidanceScale, steps: inferenceSteps,
-    strength, format: outputFormat, language,
-  }), [form, tagSelections, aspectRatio, negativePrompt, seed, batchCount, artistAWeight, guidanceScale, inferenceSteps, strength, outputFormat, language]);
+    strength, format: outputFormat, language, customArtists,
+  }), [form, tagSelections, aspectRatio, negativePrompt, seed, batchCount, artistAWeight, guidanceScale, inferenceSteps, strength, outputFormat, language, customArtists]);
   const allArtists = useMemo(() => [...new Set([...artistNames, ...customArtists])], [customArtists]);
   const audit = useMemo(() => auditPrompt(tagSelections, negativePrompt, form), [tagSelections, negativePrompt, form]);
   const generationEnabled = statusQuery.data?.enabled === true;
@@ -100,6 +100,8 @@ function App() {
     setStrength(value.strength);
     setOutputFormat(value.format);
     setLanguage(value.language);
+    setCustomArtists(value.customArtists ?? []);
+    setDocument(null);
   }
 
   function updateField(key: keyof FormState, value: string) {
@@ -107,6 +109,10 @@ function App() {
   }
 
   function toggleTag(group: TagGroupKey, tag: string) {
+    const guidanceTags = ['guidance scale 1.5', 'guidance scale 2.5', 'guidance scale 3.5'];
+    if (group === 'technical' && guidanceTags.includes(tag)) {
+      setGuidanceScale(tagSelections.technical.includes(tag) ? '3.5' : tag.replace('guidance scale ', ''));
+    }
     setTagSelections((current) => {
       const next = { ...current, [group]: current[group].includes(tag) ? current[group].filter((item) => item !== tag) : [...current[group], tag] };
       if (!current[group].includes(tag)) {
@@ -119,6 +125,19 @@ function App() {
         }
       }
       return next;
+    });
+  }
+
+  function updateGuidanceScale(value: string) {
+    setGuidanceScale(value);
+    const guidanceTags = ['guidance scale 1.5', 'guidance scale 2.5', 'guidance scale 3.5'];
+    const matchingTag = guidanceTags.find((tag) => tag.endsWith(` ${value}`));
+    setTagSelections((current) => {
+      const remaining = current.technical.filter((tag) => !guidanceTags.includes(tag));
+      return {
+        ...current,
+        technical: matchingTag ? [...remaining, matchingTag] : remaining,
+      };
     });
   }
 
@@ -161,7 +180,7 @@ function App() {
   }
 
   async function copyPrompt() {
-    const current = document ?? makeDocument();
+    const current = makeDocument();
     try {
       await navigator.clipboard.writeText(current.fullText);
       setCopied(true);
@@ -172,7 +191,7 @@ function App() {
   }
 
   function exportFile(type: 'txt' | 'json') {
-    const current = document ?? makeDocument();
+    const current = makeDocument();
     const content = type === 'txt' ? current.fullText : JSON.stringify({ ...current, settings }, null, 2);
     const blob = new Blob([content], { type: type === 'txt' ? 'text/plain;charset=utf-8' : 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -180,27 +199,40 @@ function App() {
     link.href = url;
     link.download = `flux-fusion-prompt.${type}`;
     link.click();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   function savePreset() {
     const name = presetName.trim();
     if (!name) return;
     const next = [...presets.filter((preset) => preset.name !== name), { name, settings }];
-    setPresets(next);
-    localStorage.setItem(presetKey, JSON.stringify(next));
-    setPresetName('');
+    try {
+      localStorage.setItem(presetKey, JSON.stringify(next));
+      setPresets(next);
+      setPresetName('');
+      setGenerationNotice('Preset lokal gespeichert.');
+    } catch {
+      setLocalError('Preset konnte nicht im Browser gespeichert werden.');
+    }
   }
 
   function removePreset(name: string) {
     const next = presets.filter((preset) => preset.name !== name);
-    setPresets(next);
-    localStorage.setItem(presetKey, JSON.stringify(next));
+    try {
+      localStorage.setItem(presetKey, JSON.stringify(next));
+      setPresets(next);
+    } catch {
+      setLocalError('Preset konnte nicht aus dem Browser entfernt werden.');
+    }
   }
 
   function saveCurrentSettings() {
-    localStorage.setItem(settingsKey, JSON.stringify(settings));
-    setGenerationNotice('Einstellungen lokal gespeichert.');
+    try {
+      localStorage.setItem(settingsKey, JSON.stringify(settings));
+      setGenerationNotice('Einstellungen lokal gespeichert.');
+    } catch {
+      setLocalError('Einstellungen konnten nicht im Browser gespeichert werden.');
+    }
   }
 
   async function generateImages() {
@@ -216,20 +248,57 @@ function App() {
       setLocalError('Bitte zuerst doppelte oder widersprüchliche Angaben prüfen.');
       return;
     }
-    const count = Math.max(1, Math.min(4, Number(batchCount) || 1));
+    const count = Number(batchCount);
+    if (!Number.isInteger(count) || count < 1 || count > 4) {
+      setLocalError('Die Bildanzahl muss zwischen 1 und 4 liegen.');
+      return;
+    }
+    const numericSeed = seed.trim() ? Number(seed) : null;
+    if (numericSeed !== null && (!Number.isInteger(numericSeed) || numericSeed < 0 || numericSeed > 2147483647)) {
+      setLocalError('Der Seed muss eine ganze Zahl zwischen 0 und 2.147.483.647 sein.');
+      return;
+    }
+    const guidance = Number(guidanceScale);
+    const steps = Number(inferenceSteps);
+    const imageStrength = Number(strength);
+    if (!Number.isFinite(guidance) || guidance < 1 || guidance > 20) {
+      setLocalError('Die Guidance Scale muss zwischen 1 und 20 liegen.');
+      return;
+    }
+    if (!Number.isInteger(steps) || steps < 1 || steps > 60) {
+      setLocalError('Die Inferenzschritte müssen zwischen 1 und 60 liegen.');
+      return;
+    }
+    if (!Number.isFinite(imageStrength) || imageStrength < 0 || imageStrength > 1) {
+      setLocalError('Die Referenzbild-Stärke muss zwischen 0 und 1 liegen.');
+      return;
+    }
+    if (current.negativePrompt.length > 2000) {
+      setLocalError('Der Negative Prompt darf höchstens 2.000 Zeichen enthalten.');
+      return;
+    }
     let reference: GenerateImageInput['referenceImage'];
-    if (referenceImage && statusQuery.data?.supportsReferenceImage) {
-      const data = await fileToBase64(referenceImage);
-      reference = { data, mimeType: referenceImage.type as 'image/png' | 'image/jpeg' | 'image/webp' };
+    if (referenceImage) {
+      if (!statusQuery.data?.supportsReferenceImage) {
+        setLocalError('Der konfigurierte Anbieter unterstützt keine Referenzbilder. Bitte Bild entfernen oder Anbieter wechseln.');
+        return;
+      }
+      try {
+        const data = await fileToBase64(referenceImage);
+        reference = { data, mimeType: referenceImage.type as 'image/png' | 'image/jpeg' | 'image/webp' };
+      } catch (error) {
+        setLocalError(error instanceof Error ? error.message : 'Referenzbild konnte nicht gelesen werden.');
+        return;
+      }
     }
     const request: GenerateImageInput = {
       prompt: current.descriptivePrompt,
       negativePrompt: current.negativePrompt || undefined,
-      seed: seed.trim() ? Number(seed) : null,
+      seed: numericSeed,
       count,
-      guidanceScale: Number(guidanceScale),
-      inferenceSteps: Number(inferenceSteps),
-      strength: Number(strength),
+      guidanceScale: guidance,
+      inferenceSteps: steps,
+      strength: imageStrength,
       outputFormat,
       aspectRatio: aspectRatio as GenerateImageInput['aspectRatio'],
       referenceImage: reference,
@@ -256,9 +325,13 @@ function App() {
   }
 
   async function deleteImage(id: string) {
-    await deleteArchiveImage(id);
-    setGallery((items) => items.filter((item) => item.id !== id));
-    setCompareIds((items) => items.filter((item) => item !== id));
+    try {
+      await deleteArchiveImage(id);
+      setGallery((items) => items.filter((item) => item.id !== id));
+      setCompareIds((items) => items.filter((item) => item !== id));
+    } catch {
+      setLocalError('Das Bild konnte nicht aus dem lokalen Archiv entfernt werden.');
+    }
   }
 
   function resetAll() {
@@ -278,6 +351,9 @@ function App() {
     setPromptAudit(emptyPromptAudit);
     setConsent(false);
     setAccessCode('');
+    setLocalError('');
+    setGenerationNotice('');
+    generateMutation.reset();
     if (referencePreview) URL.revokeObjectURL(referencePreview);
     setReferenceImage(null);
     setReferencePreview('');
@@ -293,6 +369,7 @@ function App() {
         <nav className="topnav" aria-label="Hauptnavigation">
           <a className="nav-link" href="#studio" data-testid="link-studio">Generator</a>
           <a className="nav-link" href="#archive" data-testid="link-archive">Archiv</a>
+          <a className="nav-link" href={`${import.meta.env.BASE_URL}flux-stil-fusion-generator.html`} download data-testid="link-html-download">HTML herunterladen</a>
           <a className="nav-link download-link" href={`${import.meta.env.BASE_URL}flux-generator-download.zip`} download data-testid="link-zip-download">ZIP herunterladen</a>
           <button className="nav-button" type="button" onClick={resetAll} data-testid="button-reset-top"><RotateCcw size={14} />Zurücksetzen</button>
         </nav>
@@ -346,7 +423,7 @@ function App() {
               <div className="field"><label className="field-label" htmlFor="select-aspect-ratio">Aspekt Ratio<span>10</span></label><div className="select-wrap"><select className="field-select" id="select-aspect-ratio" value={aspectRatio} onChange={(event) => setAspectRatio(event.target.value)} data-testid="select-aspect-ratio">{ratios.map((ratio) => <option value={ratio.value} key={ratio.value}>{ratio.label} ({ratio.value})</option>)}</select></div></div>
               <div className="field"><label className="field-label" htmlFor="seed">Seed<span>11</span></label><input className="field-input" id="seed" type="number" min="0" max="2147483647" value={seed} onChange={(event) => setSeed(event.target.value)} data-testid="input-seed" /></div>
               <div className="field"><label className="field-label" htmlFor="batch-count">Anzahl Bilder<span>max. 4</span></label><input className="field-input" id="batch-count" type="number" min="1" max="4" value={batchCount} onChange={(event) => setBatchCount(event.target.value)} data-testid="input-batch-count" /></div>
-              <div className="field"><label className="field-label" htmlFor="guidance">Guidance Scale</label><input className="field-input" id="guidance" type="number" min="1" max="20" step="0.1" value={guidanceScale} onChange={(event) => setGuidanceScale(event.target.value)} data-testid="input-guidance-scale" /></div>
+              <div className="field"><label className="field-label" htmlFor="guidance">Guidance Scale</label><input className="field-input" id="guidance" type="number" min="1" max="20" step="0.1" value={guidanceScale} onChange={(event) => updateGuidanceScale(event.target.value)} data-testid="input-guidance-scale" /></div>
               <div className="field"><label className="field-label" htmlFor="steps">Inferenzschritte</label><input className="field-input" id="steps" type="number" min="1" max="60" value={inferenceSteps} onChange={(event) => setInferenceSteps(event.target.value)} data-testid="input-inference-steps" /></div>
               <div className="field"><label className="field-label" htmlFor="strength">Referenzbild-Stärke</label><input className="field-input" id="strength" type="number" min="0" max="1" step="0.05" value={strength} onChange={(event) => setStrength(event.target.value)} data-testid="input-strength" /></div>
               <div className="field"><label className="field-label" htmlFor="output-format">Ausgabeformat</label><div className="select-wrap"><select className="field-select" id="output-format" value={outputFormat} onChange={(event) => setOutputFormat(event.target.value as 'png' | 'jpeg')} data-testid="select-output-format"><option value="png">PNG</option><option value="jpeg">JPEG</option></select></div></div>
@@ -362,7 +439,7 @@ function App() {
           <div className="panel output-panel" aria-live="polite">
             <div className="output-top"><div><p className="panel-kicker">Dein Ergebnis</p><h2 className="panel-title">Prompt Canvas</h2></div><span className="output-mark"><Layers3 size={18} /></span></div>
             {!document ? <div className="output-empty" data-testid="empty-output"><Command size={26} strokeWidth={1.4} /><p>Wähle deine Zutaten und klicke auf „Prompt erzeugen“.<br />Deine Bildidee wartet schon.</p></div> :
-              <div className="prompt-box"><div className="prompt-tabs"><span>Beschreibung</span><span>Technik separat</span></div><textarea className="prompt-text" value={document.fullText} readOnly aria-label="Generierter Prompt" data-testid="textarea-output" /><div className="prompt-meta"><span>{document.fullText.length} Zeichen / {language.toUpperCase()}</span><button className="copy-button" type="button" onClick={copyPrompt} data-testid="button-copy">{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? 'Kopiert' : 'Kopieren'}</button></div>
+              <div className="prompt-box"><div className="prompt-tabs"><span>Beschreibung</span><span>Technik separat</span></div><textarea className="prompt-text" value={document.descriptivePrompt} readOnly aria-label="Generierter beschreibender Prompt" data-testid="textarea-output" /><div className="prompt-meta"><span>{document.descriptivePrompt.length} Zeichen / {language.toUpperCase()}</span><button className="copy-button" type="button" onClick={copyPrompt} data-testid="button-copy">{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? 'Kopiert' : 'Kopieren'}</button></div>
                 <details className="technical-details"><summary>Technische Parameter separat ansehen</summary><pre>{document.technicalParameters}</pre><strong>Negative Prompt</strong><p>{document.negativePrompt || 'keine'}</p></details>
                 <div className={`prompt-audit ${promptAudit.duplicates.length || promptAudit.conflicts.length ? 'has-issues' : 'is-clean'}`} data-testid="prompt-audit">{promptAudit.duplicates.length || promptAudit.conflicts.length ? <><strong>Prompt-Prüfung</strong>{promptAudit.duplicates.length > 0 && <span>Doppelte Inhalte: {promptAudit.duplicates.join(', ')}</span>}{promptAudit.conflicts.length > 0 && <span>Konflikte: {promptAudit.conflicts.join(', ')}</span>}</> : <><Check size={13} /> Prompt-Prüfung: keine doppelten Inhalte oder Konflikte erkannt.</>}</div>
                 <div className="export-row"><button className="small-action light" type="button" onClick={() => exportFile('txt')} data-testid="button-export-txt"><Download size={14} />TXT</button><button className="small-action light" type="button" onClick={() => exportFile('json')} data-testid="button-export-json"><Download size={14} />JSON</button></div>
@@ -378,17 +455,19 @@ function App() {
           </div>
           <div className="panel generation-panel"><div className="panel-heading"><div><p className="panel-kicker">Anbieter-Verbindung</p><h2 className="panel-title">Bildgenerierung</h2></div><span className={`provider-indicator ${generationEnabled ? 'online' : ''}`} data-testid="status-provider">{statusQuery.isLoading ? <><LoaderCircle size={14} />Status wird geprüft</> : statusQuery.isError ? 'Status nicht verfügbar' : generationEnabled ? 'Aktiv' : 'Nicht verfügbar'}</span></div>
             {statusQuery.isLoading ? <div className="status-skeleton" data-testid="loading-provider"><i /><i /><i /></div> : statusQuery.isError ? <div className="inline-error"><AlertCircle size={17} /><span>Anbieterstatus konnte nicht geladen werden. Die Generierung bleibt gesperrt.</span><button className="text-button" type="button" onClick={() => statusQuery.refetch()} data-testid="button-retry-status">Erneut prüfen</button></div> : <div className="provider-meta"><strong data-testid="text-provider">{providerLabel}</strong><span>{statusQuery.data?.reason ?? (generationEnabled ? 'Bereit für eine bestätigte Generierung.' : 'Der Server hat die Bildgenerierung deaktiviert.')}</span>{referenceImage && !statusQuery.data?.supportsReferenceImage && <span className="field-help">Dieser Anbieter verarbeitet keine Referenzbilder. Das Bild wird nicht übertragen.</span>}</div>}
-            <div className="billing-confirm"><label><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={!generationEnabled} data-testid="checkbox-billing-confirmation" /><span>Ich bestätige die mögliche Abrechnung dieses einzelnen Generierungslaufs.</span></label></div>
-            <label className="field-label" htmlFor="access-code">Zugriffscode <span>wird nicht gespeichert</span></label><input className="field-input" id="access-code" type="password" autoComplete="off" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} disabled={!generationEnabled} placeholder="Code für diesen Lauf" data-testid="input-access-code" />
-            <button className="action-button generation-button" type="button" onClick={generateImages} disabled={!generationAllowed} data-testid="button-generate-images">{generateMutation.isPending ? <><LoaderCircle size={16} className="spin" />Bild wird angefordert</> : <><Sparkles size={16} />Bilder generieren</>}</button>
-            <p className="generation-footnote">Nur der API-Anbieter erzeugt Bilder. Ohne Statusfreigabe, Bestätigung und Zugriffscode bleibt die Aktion deaktiviert.</p>
+            <form className="generation-access-form" onSubmit={(event) => { event.preventDefault(); void generateImages(); }}>
+              <div className="billing-confirm"><label><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={!generationEnabled} data-testid="checkbox-billing-confirmation" /><span>Ich bestätige die mögliche Abrechnung dieses einzelnen Generierungslaufs.</span></label></div>
+              <label className="field-label" htmlFor="access-code">Zugriffscode <span>wird nicht gespeichert</span></label><input className="field-input" id="access-code" type="password" autoComplete="off" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} disabled={!generationEnabled} placeholder="Code für diesen Lauf" data-testid="input-access-code" />
+              <button className="action-button generation-button" type="submit" disabled={!generationAllowed} data-testid="button-generate-images">{generateMutation.isPending ? <><LoaderCircle size={16} className="spin" />Bild wird angefordert</> : <><Sparkles size={16} />Bilder generieren</>}</button>
+              <p className="generation-footnote">Nur der API-Anbieter erzeugt Bilder. Ohne Statusfreigabe, Bestätigung und Zugriffscode bleibt die Aktion deaktiviert.</p>
+            </form>
             {generationNotice && <p className="inline-success" data-testid="status-generation-result"><Check size={14} />{generationNotice}</p>}
           </div>
         </section>
         {(localError || generateMutation.isError) && <div className="global-error" role="alert" data-testid="status-error"><AlertCircle size={16} />{localError || 'Die Anfrage ist fehlgeschlagen.'}<button type="button" onClick={() => { setLocalError(''); generateMutation.reset(); }} data-testid="button-dismiss-error"><X size={14} /></button></div>}
 
         <section className="archive-section" id="archive">
-          <div className="archive-heading"><div><p className="panel-kicker">Nur auf diesem Gerät</p><h2 className="panel-title">Bildarchiv <span>{gallery.length.toString().padStart(2, '0')}</span></h2></div><div className="archive-actions"><button className="small-action" type="button" onClick={() => downloadArchiveZip(gallery)} disabled={!gallery.length} data-testid="button-export-zip"><Archive size={14} />ZIP exportieren</button><span className="archive-note">Bilddaten in IndexedDB gespeichert</span></div></div>
+          <div className="archive-heading"><div><p className="panel-kicker">Nur auf diesem Gerät</p><h2 className="panel-title">Bildarchiv <span>{gallery.length.toString().padStart(2, '0')}</span></h2></div><div className="archive-actions"><button className="small-action" type="button" onClick={() => void downloadArchiveZip(gallery).catch(() => setLocalError('Das ZIP-Archiv konnte nicht erstellt werden.'))} disabled={!gallery.length} data-testid="button-export-zip"><Archive size={14} />ZIP exportieren</button><span className="archive-note">Bilddaten in IndexedDB gespeichert</span></div></div>
           {compareIds.length > 0 && <p className="compare-hint" data-testid="status-compare">Zum Vergleich {compareIds.length}/2 ausgewählt — wähle ein zweites Bild.</p>}
           {compared.length === 2 && <div className="comparison" data-testid="comparison-view">{compared.map((item) => <figure key={item.id}><img src={imageDataUrl(item)} alt={`Vergleich ${item.artistA} + ${item.artistB}`} /><figcaption>{item.artistA} × {item.artistB}<span>{item.createdAt}</span></figcaption></figure>)}</div>}
           {galleryLoading ? <div className="gallery-skeleton" data-testid="loading-gallery"><i /><i /><i /></div> : gallery.length === 0 ? <div className="archive-empty" data-testid="empty-gallery"><ImagePlus size={23} /><strong>Hier beginnt dein Archiv.</strong><span>Generierte Bilder, Prompt und Einstellungen werden lokal abgelegt.</span></div> :

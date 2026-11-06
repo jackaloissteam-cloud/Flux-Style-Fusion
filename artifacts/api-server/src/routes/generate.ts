@@ -39,6 +39,9 @@ router.post("/generate", async (req, res): Promise<void> => {
     res.json(GenerateImagesResponse.parse(result));
   } catch (error) {
     if (error instanceof GenerationError) {
+      if (error.statusCode === 429 && error.retryAfterSeconds) {
+        res.setHeader("Retry-After", String(error.retryAfterSeconds));
+      }
       res.status(error.statusCode).json({ error: error.message });
       return;
     }

@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 type ProviderName = "fal" | "huggingface";
 
@@ -44,6 +44,7 @@ export class GenerationError extends Error {
   constructor(
     message: string,
     public readonly statusCode: number,
+    public readonly retryAfterSeconds?: number,
   ) {
     super(message);
     this.name = "GenerationError";
@@ -124,6 +125,33 @@ function matchesAccessCode(actual: string, expected: string) {
   return actual.length === expected.length && timingSafeEqual(actualFixed, expectedFixed);
 }
 
+const accessCodeWindows = new Map<string, { count: number; resetsAt: number }>();
+const accessCodeWindowMs = 60 * 60 * 1000;
+const maxGenerationsPerWindow = 5;
+
+function enforceGenerationLimit(accessCode: string) {
+  const now = Date.now();
+  const digest = createHash("sha256").update(accessCode).digest("hex");
+  const activeWindow = accessCodeWindows.get(digest);
+  if (activeWindow && now < activeWindow.resetsAt) {
+    if (activeWindow.count >= maxGenerationsPerWindow) {
+      throw new GenerationError(
+        "Das stündliche Generierungslimit für diesen Zugriffscode ist erreicht.",
+        429,
+        Math.max(1, Math.ceil((activeWindow.resetsAt - now) / 1000)),
+      );
+    }
+    activeWindow.count += 1;
+  } else {
+    accessCodeWindows.set(digest, { count: 1, resetsAt: now + accessCodeWindowMs });
+  }
+  if (accessCodeWindows.size > 1000) {
+    for (const [key, value] of accessCodeWindows) {
+      if (now >= value.resetsAt) accessCodeWindows.delete(key);
+    }
+  }
+}
+
 function ratioDimensions(ratio: ProviderInput["aspectRatio"]) {
   const sizes: Record<ProviderInput["aspectRatio"], { width: number; height: number }> = {
     "1:1": { width: 1024, height: 1024 },
@@ -160,7 +188,11 @@ async function readImageResponse(response: Response): Promise<GeneratedImage> {
       502,
     );
   }
-  const mimeType = mimeTypeFor(response.headers.get("content-type"));
+  const responseMimeType = response.headers.get("content-type")?.split(";")[0]?.trim();
+  if (!["image/png", "image/jpeg", "image/webp"].includes(responseMimeType ?? "")) {
+    throw new GenerationError("Der Anbieter hat keine unterstützte Bilddatei zurückgegeben.", 502);
+  }
+  const mimeType = mimeTypeFor(responseMimeType);
   const bytes = Buffer.from(await response.arrayBuffer());
   if (bytes.byteLength === 0 || bytes.byteLength > 25 * 1024 * 1024) {
     throw new GenerationError("Der Anbieter hat ein leeres oder zu großes Bild geliefert.", 502);
@@ -291,13 +323,18 @@ async function generateWithFal(
   if (images.length === 0) {
     throw new GenerationError("Die Bildergebnisse von fal.ai waren nicht abrufbar.", 502);
   }
+  const warnings = [];
+  if (input.negativePrompt?.trim()) {
+    warnings.push("Der fal.ai-FLUX-Endpunkt unterstützt keinen separaten Negative Prompt; dieser wurde nicht an das Modell übermittelt.");
+  }
+  if (input.referenceImage) {
+    warnings.push("Bei fal.ai Image-to-Image wird das Seitenverhältnis des Referenzbilds übernommen; die gewählte Ratio wird nicht übermittelt.");
+  }
   return {
     provider: "fal",
     model,
     images,
-    warnings: input.negativePrompt?.trim()
-      ? ["Der fal.ai-FLUX-Endpunkt unterstützt keinen separaten Negative Prompt; dieser wurde nicht an das Modell übermittelt."]
-      : [],
+    warnings,
   };
 }
 
@@ -367,7 +404,9 @@ async function generateWithHuggingFace(
     provider: "huggingface",
     model,
     images,
-    warnings: [],
+    warnings: input.referenceImage
+      ? ["Das konfigurierte Hugging Face Image-to-Image-Modell akzeptiert keinen separaten Stärkewert; Referenzbild-Stärke wurde nicht übermittelt."]
+      : [],
   };
 }
 
@@ -380,6 +419,7 @@ export async function generateImages(input: ProviderInput): Promise<GenerationRe
   if (!matchesAccessCode(input.accessCode, expectedAccessCode)) {
     throw new GenerationError("Der Freigabecode ist ungültig.", 403);
   }
+  enforceGenerationLimit(input.accessCode);
   const provider = status.provider;
   const model = configuredModel(provider, Boolean(input.referenceImage));
   if (!modelIdIsValid(model)) {

@@ -104,5 +104,5 @@ export async function downloadArchiveZip(images: ArchiveImage[]) {
   link.href = url;
   link.download = 'flux-style-fusion-archiv.zip';
   link.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

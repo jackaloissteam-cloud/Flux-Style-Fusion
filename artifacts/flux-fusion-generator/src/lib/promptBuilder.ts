@@ -348,14 +348,34 @@ const englishLabels: Record<string, string> = {
 };
 
 const englishValues: Record<string, string> = {
+  'Atmosphärische Sci-Fi-Romantik': 'atmospheric sci-fi romance',
+  'Düstere Manga-Surrealwelt': 'dark manga surrealism',
+  'Neon-Pop-Comic': 'neon pop comic',
+  'Barock-Fashion-Manga': 'baroque fashion manga',
+  'Cinematic Lighting': 'cinematic lighting',
+  'Golden Hour': 'golden hour',
+  'Soft Diffused Light': 'soft diffused light',
+  'Hard Rim Light': 'hard rim light',
   Gedämpft: 'muted',
   Pastell: 'pastel',
   Erdig: 'earthy',
   Monochrom: 'monochrome',
+  CloseUp: 'close-up',
+  'Close-Up': 'close-up',
   Hyperdetailliert: 'highly detailed',
   Malerisch: 'painterly',
   Fotorealistisch: 'photorealistic',
   Minimalistisch: 'minimalist',
+  'romantische Atmosphäre': 'romantic atmosphere',
+  'avantgardistische Atmosphäre': 'avant-garde atmosphere',
+  'natürliches Bildrauschen': 'natural image grain',
+  'subtile Bewegungsunschärfe': 'subtle motion blur',
+  'leichte Lens Flares': 'subtle lens flares',
+  'natürliches Kantenlicht': 'natural rim light',
+  'weiche Schatten von der Seite': 'soft side shadows',
+  'maximale Auflösung': 'maximum resolution',
+  'fotorealistische Details': 'photorealistic details',
+  'Editorial-Meisterwerk': 'editorial masterpiece',
   Weitwinkel: 'wide-angle',
   'Dramatische Perspektive': 'dramatic perspective',
   Zentralperspektive: 'one-point perspective',
@@ -486,8 +506,10 @@ export function buildPromptDocument(
     language,
   );
   const artistBWeight = 100 - input.artistAWeight;
+  const technicalTags = input.tagSelections.technical
+    .filter((value) => !/^guidance scale \d+(?:\.\d+)?$/i.test(value));
   const descriptivePrompt = [
-    english ? 'STYLE' : 'STYLE',
+    'STYLE',
     `${label(options.motif.label)}: ${translateValue(input.form.motif, language)}`,
     `${label(options.artistA.label)} (${input.artistAWeight}%): ${input.form.artistA}`,
     `${label(options.artistB.label)} (${artistBWeight}%): ${input.form.artistB}`,
@@ -518,7 +540,7 @@ export function buildPromptDocument(
     `${english ? 'Inference steps' : 'Inferenzschritte'}: ${input.inferenceSteps}`,
     `${english ? 'Image-to-image strength' : 'Referenzbild-Stärke'}: ${input.strength}`,
     `${english ? 'Output format' : 'Ausgabeformat'}: ${input.outputFormat.toUpperCase()}`,
-    `${english ? 'Extra technical tags' : 'Weitere technische Tags'}: ${list('technical', english ? 'none' : 'keine')}`,
+    `${english ? 'Extra technical tags' : 'Weitere technische Tags'}: ${listValue(technicalTags, english ? 'none' : 'keine', language)}`,
   ].join('\n');
   const negativePrompt = uniqueValues([
     ...input.tagSelections.negativeTags,
@@ -534,6 +556,11 @@ export function buildPromptDocument(
   };
 }
 
-export const initialState: FormState = Object.fromEntries(
+const defaultFormValues = Object.fromEntries(
   Object.entries(options).map(([key, config]) => [key, config.values[0]]),
 ) as FormState;
+
+export const initialState: FormState = {
+  ...defaultFormValues,
+  artistB: options.artistB.values[1] ?? defaultFormValues.artistB,
+};
