@@ -5,22 +5,28 @@ generated = []
 id = "h_35W7yVqofSQlqlLo6yq"
 uri = "file://.agents/outputs/flux-fusion-generator-code.zip"
 type = "unspecified"
-title = "Flux Stil-Fusion Generator – Quellcode"
-description = "ZIP mit dem vollständigen React/Vite-App-Code inklusive der erweiterten Prompt-Parameter, Upload-Vorschau und Konfiguration. Node-Module und Build-Output sind nicht enthalten."
+title = "FLUX Style Fusion — ZIP"
+description = "Aktueller Frontend- und API-Quellcode einschließlich OpenAPI-Spezifikation und Provider-Hinweisen."
 logical_id = "d2e35da0-d40a-43da-b581-e6994b770b55"
+content_hash = "sha256:2ebc858f3e0533ec82adfe8c75d5b0e564269124f2b6115618e8581f26f868d9"
+size = 464105
+mtime_ms = 1795185783860
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:3f4a31f8-aa77-4084-babd-e074e21f1671/d2e35da0-d40a-43da-b581-e6994b770b55/45786fd9-3ee7-42d7-af2d-f72e17515cbf"
+storage_version_token = "1795185908534525"
+content_type = "application/octet-stream"
 
 [[outputs]]
 id = "CwOFx5Qinnvy-SxRfsVIB"
 uri = "file://.agents/outputs/flux-stil-fusion-generator.html"
 type = "html"
-title = "Flux Stil-Fusion Generator – mit Fotograf:innen"
-description = "Aktuelle standalone HTML mit den zusätzlichen Fotograf:innen in beiden Künstler-Auswahllisten."
+title = "FLUX Style Fusion — HTML"
+description = "Aktuelle Einzeldatei mit eingebettetem CSS und JavaScript; die Bildgenerierung benötigt den verbundenen API-Server."
 logical_id = "0611bca9-72b0-4e2b-a717-5b17c8026ee8"
-content_hash = "sha256:27aa410514e98bfb5bdd09063ea2b0e6a58bef8b5f8a15d94b4c7c66e9a81728"
-size = 18496
-mtime_ms = 1793891654649
-storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:3f4a31f8-aa77-4084-babd-e074e21f1671/0611bca9-72b0-4e2b-a717-5b17c8026ee8/d14064e4-02bd-4720-91ac-9d904b032e89"
-storage_version_token = "1793891972416184"
+content_hash = "sha256:8a9281a190f7fc33637743372b2677a64a930f7bb79e090c48295858cde1358e"
+size = 612780
+mtime_ms = 1795185781749
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:3f4a31f8-aa77-4084-babd-e074e21f1671/0611bca9-72b0-4e2b-a717-5b17c8026ee8/1b9fb4e7-613f-454b-b714-c9b014ae077c"
+storage_version_token = "1795185907809540"
 content_type = "text/html"
 
 [[outputs]]

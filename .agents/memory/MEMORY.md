@@ -1,2 +1,3 @@
 - [Flux generator inputs](flux-generator-inputs.md) — advanced settings and reference-image metadata stay client-side until an image service is requested.
 - [pnpm bootstrap mismatch](pnpm-version-bootstrap.md) — if the workspace's requested pnpm version cannot bootstrap, disabling automatic manager switching can restore workflows.
+- [Single-file Vite exports](standalone-vite-html.md) — embed the built module as a base64 Blob import; React bundles may contain `</script>` and break raw inline tags.
