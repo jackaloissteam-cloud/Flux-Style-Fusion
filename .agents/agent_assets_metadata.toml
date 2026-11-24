@@ -19,14 +19,14 @@ content_type = "application/octet-stream"
 id = "CwOFx5Qinnvy-SxRfsVIB"
 uri = "file://.agents/outputs/flux-stil-fusion-generator.html"
 type = "html"
-title = "FLUX Style Fusion — HTML"
-description = "Aktuelle Einzeldatei mit eingebettetem CSS und JavaScript; die Bildgenerierung benötigt den verbundenen API-Server."
+title = "Flux Stil-Fusion Generator – aktuelle HTML-Datei"
+description = "Einzeldatei mit aktualisierten Promptoptionen, eingebettetem CSS und JavaScript."
 logical_id = "0611bca9-72b0-4e2b-a717-5b17c8026ee8"
-content_hash = "sha256:8a9281a190f7fc33637743372b2677a64a930f7bb79e090c48295858cde1358e"
-size = 612780
-mtime_ms = 1795185781749
-storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:3f4a31f8-aa77-4084-babd-e074e21f1671/0611bca9-72b0-4e2b-a717-5b17c8026ee8/1b9fb4e7-613f-454b-b714-c9b014ae077c"
-storage_version_token = "1795185907809540"
+content_hash = "sha256:1bd35ea8727aed2a18ab8d9f3b63276ea606df32f79a848f48932c98e836b362"
+size = 618021
+mtime_ms = 1795496819536
+storage_uri = "gcs://replit-rams-assets-kirk/rams/assets/repl:3f4a31f8-aa77-4084-babd-e074e21f1671/0611bca9-72b0-4e2b-a717-5b17c8026ee8/b822a8c6-a8de-4e6f-9d0a-5a655d8ac584"
+storage_version_token = "1795496852385277"
 content_type = "text/html"
 
 [[outputs]]

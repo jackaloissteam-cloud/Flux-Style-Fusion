@@ -207,17 +207,36 @@ export const tagGroups: TagGroup[] = [
       'romantic atmosphere', 'dreamy mood', 'elegant', 'warm and intimate',
       'soft and graceful', 'confident expression', 'calm presence',
       'poetic composition', 'sophisticated tone', 'gentle expression',
+      'sinnliche Spannung', 'verspielte Leichtigkeit', 'fokussierte Dynamik',
+      'leise Melancholie',
     ],
   },
   {
     key: 'environment',
     label: 'Szene & Atmosphäre',
     values: [
+      // Bestehende Szenen
       'minimalistisches Studio mit Betonwänden', 'industrielles Loft',
       'verlassener Strand bei Sonnenuntergang', 'modernistische Villa mit Marmor und Glas',
       'cineastisches Boudoir', 'romantische Atmosphäre', 'avantgardistische Atmosphäre',
       'raffinierte und kraftvolle Stimmung', 'dichte Theaternebel-Atmosphäre',
       'schimmernder Kräuterdampf',
+      // Alltägliche Szenen
+      'Morgenkaffee am Küchenfenster im Regen', 'Wäsche aufhängen auf dem Balkon in der Abendsonne',
+      'überfülltes Zugabteil nach Feierabend', 'Hausflur am Morgen vor dem Aufbruch',
+      'spätes Abendessen in einer winzigen Garküche', 'sonnendurchflutete Altbauküche am Sonntagmorgen',
+      // Sportive Szenen
+      'nasse Straßen beim Nachtlauf', 'leere Stadiontribüne in der Abendsonne',
+      'morgendlicher Trainingsraum mit weichem Licht', 'Küstenstraße für Rennradfahrer',
+      'nebliger Waldweg beim Trailrunning', 'abendlicher Rooftop-Basketballplatz',
+      // Romantische Szenen
+      'einsame Straße unter einem Schirm im Platzregen', 'Fensterbank über der Stadt bei Nacht',
+      'halb dunkler Raum bei gedimmtem Licht', 'stiller Parkweg in der Dämmerung',
+      'verlassenes Observatorium im Nebel', 'Nachtzug durch eine Schneewüste',
+      // Erotische & sinnliche Szenen
+      'hinter einem dünnen Vorhang bei Gegenlicht', 'Schlafzimmer mit Spiegel bei gedimmtem Licht',
+      'warm beleuchtetes Zimmer in der Abenddämmerung', 'dunkles Zimmer mit seidigem Lichtspiel',
+      'regennasses Fenster mit warmem Kerzenschein', 'freistehende Badewanne im Halbdunkel',
     ],
   },
   {
@@ -230,6 +249,10 @@ export const tagGroups: TagGroup[] = [
       'neutraler Blick', 'in Bewegung aufgenommen', 'leichte Kopfneigung',
       'natürliche Haltung', 'nicht perfekt zentriert', 'professionelles Model',
       'selbstbewusste und elegante Pose',
+      // Neue Details für Sport, Alltag & Intimität
+      'leichter Schweißglanz auf der Haut', 'verwehte Haarsträhnen im Gesicht',
+      'Schulterblick über die Schulter', 'entspannte Körperspannung',
+      'Hände um eine warme Tasse gelegt',
     ],
   },
   {
@@ -239,6 +262,8 @@ export const tagGroups: TagGroup[] = [
       'natural fabric texture', 'soft skin highlights', 'refined facial features',
       'subtle jewelry', 'flowing hair', 'clean background', 'gentle contrast',
       'balanced color palette', 'delicate shadows', 'polished composition',
+      'silk fabric reflections', 'raindrops on glass', 'wet asphalt reflections',
+      'warm rim highlights on skin',
     ],
   },
   {
@@ -389,6 +414,40 @@ const englishValues: Record<string, string> = {
   'raffinierte und kraftvolle Stimmung': 'refined and powerful mood',
   'dichte Theaternebel-Atmosphäre': 'dense theatrical fog',
   'schimmernder Kräuterdampf': 'shimmering herbal vapor',
+  // Neue Mood-Übersetzungen
+  'sinnliche Spannung': 'sensual tension',
+  'verspielte Leichtigkeit': 'playful lightness',
+  'fokussierte Dynamik': 'focused dynamism',
+  'leise Melancholie': 'quiet melancholy',
+  // Neue Szenen: Alltag
+  'Morgenkaffee am Küchenfenster im Regen': 'morning coffee by the kitchen window in the rain',
+  'Wäsche aufhängen auf dem Balkon in der Abendsonne': 'hanging laundry on a balcony in evening sun',
+  'überfülltes Zugabteil nach Feierabend': 'crowded train car after work',
+  'Hausflur am Morgen vor dem Aufbruch': 'apartment hallway in the morning before leaving',
+  'spätes Abendessen in einer winzigen Garküche': 'late-night meal in a tiny street stall',
+  'sonnendurchflutete Altbauküche am Sonntagmorgen': 'sun-drenched vintage apartment kitchen on a Sunday morning',
+  // Neue Szenen: Sportiv
+  'nasse Straßen beim Nachtlauf': 'wet city streets during a night run',
+  'leere Stadiontribüne in der Abendsonne': 'empty stadium stands in evening sun',
+  'morgendlicher Trainingsraum mit weichem Licht': 'morning training gym with soft light',
+  'Küstenstraße für Rennradfahrer': 'coastal road for road cycling',
+  'nebliger Waldweg beim Trailrunning': 'misty forest trail during trail running',
+  'abendlicher Rooftop-Basketballplatz': 'evening rooftop basketball court',
+  // Neue Szenen: Romantisch
+  'einsame Straße unter einem Schirm im Platzregen': 'quiet street under a single umbrella in pouring rain',
+  'Fensterbank über der Stadt bei Nacht': 'windowsill overlooking the city at night',
+  'halb dunkler Raum bei gedimmtem Licht': 'dimly lit room for a slow dance',
+  'stiller Parkweg in der Dämmerung': 'quiet park path at dusk',
+  'verlassenes Observatorium im Nebel': 'abandoned observatory in fog',
+  'Nachtzug durch eine Schneewüste': 'night train through a snow desert',
+  // Neue Szenen: Erotisch & sinnlich
+  'hinter einem dünnen Vorhang bei Gegenlicht': 'behind a sheer curtain in backlight',
+  'Schlafzimmer mit Spiegel bei gedimmtem Licht': 'bedroom with mirror in dim light',
+  'warm beleuchtetes Zimmer in der Abenddämmerung': 'warmly lit room at twilight',
+  'dunkles Zimmer mit seidigem Lichtspiel': 'dark room with silky light play',
+  'regennasses Fenster mit warmem Kerzenschein': 'rain-streaked window with warm candlelight',
+  'freistehende Badewanne im Halbdunkel': 'freestanding bathtub in dim half-light',
+  // Bestehende & neue menschliche Details
   'natürliche Hautstruktur mit sichtbaren Poren': 'natural skin texture with visible pores',
   'kleine Unreinheiten': 'small imperfections',
   'feine Falten': 'fine wrinkles',
@@ -404,6 +463,12 @@ const englishValues: Record<string, string> = {
   'nicht perfekt zentriert': 'intentionally off-center framing',
   'professionelles Model': 'professional model',
   'selbstbewusste und elegante Pose': 'confident, elegant pose',
+  'leichter Schweißglanz auf der Haut': 'subtle sheen of sweat on skin',
+  'verwehte Haarsträhnen im Gesicht': 'windblown strands of hair across the face',
+  'Schulterblick über die Schulter': 'over-the-shoulder glance',
+  'entspannte Körperspannung': 'relaxed body tension',
+  'Hände um eine warme Tasse gelegt': 'hands wrapped around a warm mug',
+  // Editorial & Kamera
   'High-Fashion-Editorial': 'high-fashion editorial',
   'cineastisches Mode-Editorial': 'cinematic fashion editorial',
   'avantgardistische Editorial-Fotografie': 'avant-garde editorial photography',
